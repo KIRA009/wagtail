@@ -3,9 +3,8 @@ const BULK_ACTION_SELECT_ALL_CHECKBOX_TH = 'bulk-actions-filter-checkbox';
 const BULK_ACTION_FILTERS_CLASS = `${BULK_ACTION_SELECT_ALL_CHECKBOX_TH} .c-dropdown__item a`;
 const BULK_ACTION_CHOICES_DIV = 'bulk-actions-choices';
 const BULK_ACTION_NUM_PAGES_SPAN = 'num-pages';
-const BULK_ACTION_NUM_PAGES_IN_LISTING_SPAN = 'num-pages-in-listing';
 const TABLE_HEADERS_TR = 'table-headers';
-let parentPageId;
+const BULK_ACTIONS_CHOICES = 'bulk-actions-choices';
 
 const checkedState = {
   checkedPages: new Set(),
@@ -35,20 +34,16 @@ function SelectBulkActionsCheckboxes(e) {
 
   if (checkedState.checkedPages.size === 0) {
     /* when all checboxes are unchecked */
-    document.querySelectorAll(`.${TABLE_HEADERS_TR} > th`).forEach(el => el.classList.remove('u-hidden'));
-    document.querySelector(`.${BULK_ACTION_CHOICES_DIV}`).classList.add('u-hidden');
+    document.querySelector(`.${BULK_ACTIONS_CHOICES}`).classList.add('hidden');
     document.querySelectorAll(`.${BULK_ACTION_PAGE_CHECKBOX_INPUT}`).forEach(el => el.classList.remove('show'));
     document.querySelector(`.${BULK_ACTION_SELECT_ALL_CHECKBOX_TH}`).setAttribute('colspan', '1');
   } else if (checkedState.checkedPages.size === 1 && prevLength === 0) {
     /* when 1 checkbox is checked for the first time */
     document.querySelectorAll(`.${BULK_ACTION_PAGE_CHECKBOX_INPUT}`).forEach(el => {
-      el.classList.remove('show');
       el.classList.add('show');
     });
-    document.querySelectorAll(`.${TABLE_HEADERS_TR} > th`).forEach(el => el.classList.add('u-hidden'));
     document.querySelector(`.${BULK_ACTION_SELECT_ALL_CHECKBOX_TH}`).classList.remove('u-hidden');
-    document.querySelector(`.${BULK_ACTION_CHOICES_DIV}`).classList.remove('u-hidden');
-    document.querySelector(`.${BULK_ACTION_SELECT_ALL_CHECKBOX_TH}`).setAttribute('colspan', '6');
+    document.querySelector(`.${BULK_ACTIONS_CHOICES}`).classList.remove('hidden');
   }
 
   if (checkedState.checkedPages.size === checkedState.numPages) {
@@ -59,35 +54,14 @@ function SelectBulkActionsCheckboxes(e) {
   if (checkedState.checkedPages.size > 0) {
     /* Update text on number of pages */
     document.querySelector(`.${BULK_ACTION_NUM_PAGES_SPAN}`).textContent =
-    `${checkedState.checkedPages.size === checkedState.numPages ? 'All ' : ''} ${checkedState.checkedPages.size}`;
+    checkedState.checkedPages.size === checkedState.numPages ? 'All pages on this screen selected. Select all in listing' : `${checkedState.checkedPages.size} pages on this screen selected`;
   }
-}
-
-
-/* Gets the value of given name from the query string in url */
-function getParameterByName(name) {
-  var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
-  return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
-}
-
-
-/* Updates the content of BULK_ACTION_NUM_PAGES_IN_LISTING_SPAN with the new count of pages */
-function updateNumPagesInListing(filterQueryString) {
-  // eslint-disable-next-line no-undef
-  $.ajax({
-    url: parentPageId ? `/admin/pages/${parentPageId}/filter-count/` : '/admin/pages/filter-count/',
-    data: { filters: filterQueryString },
-    success: (response) => {
-      document.querySelector(`.${BULK_ACTION_NUM_PAGES_IN_LISTING_SPAN}`).textContent = response.count;
-    },
-  });
 }
 
 /* Event listener for filter dropdown options */
 function FilterEventListener(e) {
   e.preventDefault();
   const filter = e.target.dataset.filter || '';
-  updateNumPagesInListing(filter);
   const changeEvent = new Event('change');
   if (filter.length) {
     /* split the filter string into [key,value] pairs and check for the values in the
@@ -129,7 +103,7 @@ function BulkActionEventListeners(e) {
 
 
 /* Adds all event listeners */
-function AddBulkActionEventListeners() {
+(function () {
   document.querySelectorAll(`.${BULK_ACTION_PAGE_CHECKBOX_INPUT}`)
     .forEach(el => {
       checkedState.numPages++;
@@ -139,11 +113,7 @@ function AddBulkActionEventListeners() {
   document.querySelectorAll(`.${BULK_ACTION_FILTERS_CLASS}`).forEach(
     elem => elem.addEventListener('click', FilterEventListener)
   );
-  document.querySelectorAll(`.${BULK_ACTION_CHOICES_DIV} > ul > li > a`).forEach(
+  document.querySelectorAll(`.${BULK_ACTION_CHOICES_DIV} ul > li > a`).forEach(
     elem => elem.addEventListener('click', BulkActionEventListeners)
   );
-  parentPageId = document.querySelector(`.${BULK_ACTION_SELECT_ALL_CHECKBOX_TH}`).dataset.parentId;
-  updateNumPagesInListing(getParameterByName('filters'));
-}
-
-window.AddBulkActionEventListeners = AddBulkActionEventListeners;
+})()

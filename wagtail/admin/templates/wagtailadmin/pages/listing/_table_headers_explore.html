@@ -21,16 +21,6 @@ ordering: the current sort parameter
         <div>
             <input type="checkbox" aria-label="Bulk action checkbox" />
             {% bulk_action_filters %}
-            <div class="bulk-actions-choices u-hidden">
-                <span>
-                    {% blocktrans count counter=pages|length %}
-                    <span class="num-pages">1 page</span> on this page selected. Select all <span class="num-pages-in-listing">0</span> in listing |
-                    {% plural %}
-                    <span class="num-pages">All {{counter}} pages</span> on this page selected. Select all <span class="num-pages-in-listing">0</span> in listing |
-                    {% endblocktrans %}
-                </span>
-                <ul>{% page_bulk_action_choices %}</ul>
-            </div>
         </div>
     </th>
     <th class="search">

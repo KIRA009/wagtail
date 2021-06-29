@@ -21,6 +21,14 @@
             {% url 'wagtailadmin_explore' parent_page.id as pagination_base_url %}
             {% paginate pages base_url=pagination_base_url %}
         {% endif %}
+        <footer class="footer bulk-actions-choices hidden">
+            <div class="footer__container">
+                <ul>{% page_bulk_action_choices %}</ul>
+                <span class="num-pages">
+                    
+                </span>
+            </div>
+        </footer>
     </form>
 {% endblock %}
 
@@ -30,7 +38,7 @@
     {% comment %} modal-workflow is required by the view restrictions interface {% endcomment %}
     <script src="{% versioned_static 'wagtailadmin/js/modal-workflow.js' %}"></script>
     <script src="{% versioned_static 'wagtailadmin/js/privacy-switch.js' %}"></script>
-
+    <script defer src="{% versioned_static 'wagtailadmin/js/bulk-actions.js' %}"></script>
     <script type="text/javascript">
         {% if ordering == 'ord' %}
             $(function() {

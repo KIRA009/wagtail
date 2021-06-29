@@ -93,20 +93,6 @@ ul.listing {
                 border: 0;
                 padding-left: 0.3rem;
             }
-
-            .bulk-actions-choices,
-            .bulk-actions-choices ul {
-                display: flex;
-                align-items: center;
-            }
-
-            .bulk-actions-choices li {
-                margin: 0 0.5em;
-            }
-
-            .bulk-actions-choices span {
-                text-transform: none;
-            }
         }
 
         .search {
@@ -478,6 +464,29 @@ ul.listing {
     &.images img {
         @include transition(border-color 0.2s ease);
         border: 3px solid $color-white;
+    }
+}
+
+footer.bulk-actions-choices {
+    @include transition(bottom 0.5s ease 0.5s);
+    &.hidden {
+        bottom: -200px;
+    }
+    ul {
+        display: flex;
+        li {
+            margin: 0 0.5em;
+            background-color: #fff;
+            border-radius: 5px;
+        }
+    }
+
+    .footer__container {
+        display: flex;
+        > span {
+            text-transform: none;
+            margin-left: 10px;
+        }
     }
 }
 
