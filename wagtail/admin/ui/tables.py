@@ -3,12 +3,14 @@
 from collections import OrderedDict
 from collections.abc import Mapping
 
-from django.forms import MediaDefiningClass
+from django.forms import Media, MediaDefiningClass
 from django.template.loader import get_template
 from django.urls import reverse
 from django.utils.functional import cached_property
 from django.utils.text import capfirst
+from django.utils.translation import gettext as _
 
+from wagtail.admin.staticfiles import versioned_static
 from wagtail.admin.ui.components import Component
 from wagtail.coreutils import multigetattr
 
@@ -150,6 +152,7 @@ class TitleColumn(Column):
         )
         if self.link_classname is not None:
             context["link_attrs"]["class"] = self.link_classname
+        context["model_name"] = instance._meta.model_name
         return context
 
     def get_link_url(self, instance, parent_context):
@@ -197,6 +200,32 @@ class UserColumn(Column):
             context["display_name"] = full_name or user.get_username()
         else:
             context["display_name"] = self.blank_display_name
+        return context
+
+
+class BulkActionCheckBoxColumn(Column):
+
+    cell_template_name = "wagtailadmin/tables/bulk_action_checkbox_cell.html"
+    header_template_name = "wagtailadmin/bulk_actions/select_all_checkbox_cell.html"
+
+    media = Media(
+        js=[
+            versioned_static("wagtailadmin/js/bulk-actions.js"),
+        ],
+    )
+
+    def __init__(self, name, **kwargs):
+        super().__init__(name, **kwargs)
+
+    def get_cell_context_data(self, instance, parent_context):
+        context = super().get_cell_context_data(instance, parent_context)
+        model_name = instance._meta.model_name
+        context.update(
+            checkbox_aria_label=_(f"Select {model_name}"),
+            aria_labelledby_prefix=f"{model_name}_",
+            aria_labelledby=instance.pk,
+            aria_labelledby_suffix="_title",
+        )
         return context
 
 

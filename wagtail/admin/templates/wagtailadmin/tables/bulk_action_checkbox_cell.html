@@ -1,0 +1,8 @@
+{% load i18n l10n wagtailadmin_tags %}
+<td>
+    <input type="checkbox"
+        data-object-id="{{value|unlocalize}}" data-bulk-action-checkbox class="bulk-action-checkbox"
+        aria-label="{{checkbox_aria_label}}"
+        aria-labelledby="{{ aria_labelledby_prefix }}{{ aria_labelledby }}{{ aria_labelledby_suffix }}"
+    />
+</td>

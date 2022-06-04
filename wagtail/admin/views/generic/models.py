@@ -15,7 +15,8 @@ from django.views.generic.list import BaseListView
 
 from wagtail.admin import messages
 from wagtail.admin.forms.search import SearchForm
-from wagtail.admin.ui.tables import Table, TitleColumn
+from wagtail.admin.ui.tables import BulkActionCheckBoxColumn, Table, TitleColumn
+from wagtail.admin.views.bulk_action.registry import bulk_action_registry
 from wagtail.log_actions import log
 from wagtail.search.index import class_is_indexed
 
@@ -57,8 +58,34 @@ else:
             return HttpResponseRedirect(success_url)
 
 
+class BulkActionMixin:
+    show_bulk_action_checkbox = True
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["show_bulk_action_checkbox"] = self.show_bulk_action_checkbox
+        model_opts = self.model._meta
+        if self.show_bulk_action_checkbox:
+            actions = bulk_action_registry.get_bulk_actions_for_model(
+                self.model._meta.app_label, self.model._meta.model_name
+            )
+            if not actions:
+                # don't display bulk actions bar even when setting is on
+                self.show_bulk_action_checkbox = False
+            else:
+                context["model_opts"] = model_opts
+                context["select_all_text"] = _(
+                    f"Select all {model_opts.verbose_name_plural} in listing"
+                )
+        return context
+
+
 class IndexView(
-    LocaleMixin, PermissionCheckedMixin, WagtailAdminTemplateMixin, BaseListView
+    LocaleMixin,
+    PermissionCheckedMixin,
+    BulkActionMixin,
+    WagtailAdminTemplateMixin,
+    BaseListView,
 ):
     model = None
     index_url_name = None
@@ -164,8 +191,14 @@ class IndexView(
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         index_url = self.get_index_url()
+
+        if self.show_bulk_action_checkbox:
+            columns = [BulkActionCheckBoxColumn("pk")] + self.columns
+        else:
+            columns = self.columns
+
         table = Table(
-            self.columns,
+            columns,
             context["object_list"],
             base_url=index_url,
             ordering=self.get_ordering(),
